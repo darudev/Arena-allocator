@@ -12,7 +12,7 @@ typedef uint32_t U32;
 typedef uint64_t U64;
 typedef size_t USIZE;
 
-#define DEFAULT_ALIGNMENT (sizeof(void *))
+#define MACHINE_ALIGNMENT (sizeof(void *))
 
 typedef struct Arena Arena;
 struct Arena {
@@ -39,25 +39,25 @@ void *arena_alloc(Arena *arena, USIZE size)
 
  // -
  // Alignment
- if(size == DEFAULT_ALIGNMENT)
+ if(size == MACHINE_ALIGNMENT)
  {
   aligned_size = size;
  }
- else if(size < DEFAULT_ALIGNMENT)
+ else if(size < MACHINE_ALIGNMENT)
  {
-  U64 padding = DEFAULT_ALIGNMENT - size;
+  U64 padding = MACHINE_ALIGNMENT - size;
   aligned_size = size + padding;
  }
- else if(size > DEFAULT_ALIGNMENT)
+ else if(size > MACHINE_ALIGNMENT)
  {
-  if(size % DEFAULT_ALIGNMENT)
+  if(size % MACHINE_ALIGNMENT)
   {
-   U64 base_size = (size / DEFAULT_ALIGNMENT) * DEFAULT_ALIGNMENT;
-   aligned_size = base_size + DEFAULT_ALIGNMENT;
+   U64 base_size = (size / MACHINE_ALIGNMENT) * MACHINE_ALIGNMENT;
+   aligned_size = base_size + MACHINE_ALIGNMENT;
   }
   else
   {
-   aligned_size = (size / DEFAULT_ALIGNMENT) * DEFAULT_ALIGNMENT;
+   aligned_size = (size / MACHINE_ALIGNMENT) * MACHINE_ALIGNMENT;
   }
  }
 
@@ -106,7 +106,12 @@ struct Object {
 S32 main(void)
 {
  // -
- printf("\nMACHINE ALIGNMENT: %zu\n\n", DEFAULT_ALIGNMENT);
+ printf("\nMACHINE ALIGNMENT: %zu\n\n", MACHINE_ALIGNMENT);
+
+ // -
+ U8 arena_memory[64];
+ Arena arena = {0};
+ arena_init(&arena, arena_memory, 64);
 
  // -
  U64 unaligned_bytes_count = 0;
@@ -115,11 +120,6 @@ S32 main(void)
  {
   // -
   printf("ITERATION: %zu\n", i);
-
-  // -
-  U8 arena_memory[64];
-  Arena arena = {0};
-  arena_init(&arena, arena_memory, 64);
 
   // Allocate a U32 (4 bytes)
   U32 *number = arena_alloc(&arena, sizeof(U32));
